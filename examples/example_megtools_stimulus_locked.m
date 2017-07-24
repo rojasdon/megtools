@@ -11,9 +11,8 @@ meg_defaults;
 [pth,~,~] = fileparts(which('meg_defaults'));
 
 % check if data are downloaded
-pth = fullfile(pth,'sample_data','auditory');
 if exist(fullfile(pth,'sample_data','auditory'),'dir')
-    cd(pth);
+    cd(fullfile(pth,'sample_data','auditory'));
 else
     error('Sample dataset not present!');
 end
@@ -82,23 +81,17 @@ axis tight;xlabel('Time (ms)');ylabel('Amplitude fT');
 
 % 2d topo plot of a component
 figure('name','2d topography','color','w');
-meg_plot2d(bp,88);
+meg_plot2d(bp,88); axis off;
 
 % 3d topo plot at same point
 figure('name','3D topography','color','w');
 meg_plot3d(bp,88); title('3D topography');
 
-% show headshape too just for fun
+% show headshape
 hold on;
-scalp = triangulate_meg(bp.fiducials.pnt);
-s = patch('faces',scalp,'vertices',bp.fiducials.pnt,'Edgecolor','r',...
-       'Facelighting','none','Facecolor','none','Marker','o',...
-        'Linestyle','none');
+plot_hs_sens(bp);
 
-% demonstrate simple plot function for just headshape, fids and locations
-subplot(1,2,2); plot_hs_sens(bp); title('3D headshape, fids and locations');
-
-% time-frequency plot from channel 181(180) in the helmet from 5 to 80 Hz
-tf = tft(epoched,[5 80],181,'waven',7);
-figure('name','Morlet Wavelet Analysis in Gamma Band','color',[.8 .8 .8]);
-meg_plotTFR(tf,'nepower');
+% time-frequency plot from channel A131 in the helmet from 5 to 60 Hz
+tf = tft(epoched,[5 60],'chan',{'A131'},'waven',7,'detrend','yes');
+figure('name','Morlet Wavelet Analysis in Gamma Band','color','w');
+meg_plotTFR(tf,'nepower','scale','on');
