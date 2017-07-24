@@ -1,0 +1,33 @@
+function tft = besa_tftratio()
+
+%read conditioning tft
+cond=spm_get([1,1],'*.tfc','Select conditioning tfc');
+if ischar(cond)
+    tftc = readBESAtfc(cond);
+elseif isstruct(cond)
+    tftc = cond;
+end
+
+test=spm_get([1,1],'*.tfc','Select testing tfc');
+%read testing tft
+if ischar(test)
+    tftt = readBESAtfc(test);
+elseif isstruct(test)
+    tftt = test;
+end
+meas = 1;
+
+tft = tftc;
+tft.Data = tft.Data*0.0;
+%1=gating ratio;2=suppression measure
+for i=1:size(tftc.Data,1)
+    if meas == 1
+        tft.Data(i,:,:) = (tftt.Data(i,:,:)+1)./(tftc.Data(i,:,:)+1)*100;
+    else
+        tft.Data(i,:,:) = (tftc.Data(i,:,:)+1)-(tftt.Data(i,:,:)+1)./(tftt.Data(i,:,:)+1);
+    end
+end
+[path, file, ext, ver]=fileparts(cond);
+
+tft.ConditionName = 
+besa_writetfc(tft);

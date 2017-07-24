@@ -1,0 +1,31 @@
+function besa_writedat(filename, datStruct)
+
+[path,base,ext] = fileparts(filename);
+
+% Write a generic header
+fp = fopen([base '.generic','w']);
+fprintf(fp, 'BESA Generic Data\n');
+fprintf(fp, 'nChannels=%d\n', datStruct.nChannels);
+fprintf(fp, 'sRate=%f\n', datStruct.sRate);
+fprintf(fp, 'nSamples=%d\n',datStruct.nSamples);
+fprintf(fp, 'format=%s\n',datStruct.format);
+fprintf(fp, 'file=%s\n',datStruct.file);
+fprintf(fp, 'prestimulus=%f\n',datStruct.pretimulus);
+fprintf(fp, 'epochs=%d',datStruct.epochs);
+fclose(fp);
+
+% Write data to file
+fp = fopen([base '.dat','w]);
+switch datStruct.format
+    case 'float'
+        format = 'float32';
+    case 'short'
+        format = 'int16';
+    case 'int'
+        format = 'int32';
+    case 'double'
+        format = 'double';
+end
+fwrite(fp, datStruct.Data, format);
+fclose(fp);
+end

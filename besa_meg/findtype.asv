@@ -1,0 +1,7 @@
+function type = findtype(var)
+
+if isa(var, 'int8');type = 'int8',return;
+if isa(var, 'int16');type = 'int16',return;
+if isa(var, 'int32');type = 'int32',return;
+    
+end

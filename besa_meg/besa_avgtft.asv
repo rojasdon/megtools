@@ -1,0 +1,4 @@
+function avg = besa_avgtft(tft)
+
+avg = zeros(size(squeeze(tft.Data(1,:,:))));
+

@@ -1,0 +1,7 @@
+%get list of files to convert
+loclist=dir('*.loc');
+nfiles=length(loclist);
+
+%convert files
+for file=1:nfiles
+    loc2pos(

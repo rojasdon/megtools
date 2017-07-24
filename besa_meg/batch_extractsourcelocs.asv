@@ -1,0 +1,39 @@
+[files paths]=uigetfile('*.bsa','MultiSelect','on');
+nfiles = length(files);
+
+% open text file for writing
+[filename, filepath] = uiputfile('*.txt', 'Output file');
+
+% prompt for number of dipole to read in each file
+[selection,dialog]=uigetpref('mygraphics',... % Group
+       'dipnumber','Choose dipole',...                  
+       {'Number of Dipole in File To Read?'},...
+       {'1','2';'1','2'},...       % Values and button strings
+       'ExtraOptions','Cancel',...             % Additional button
+       'DefaultButton','1');        % Callback for Help button
+   
+fpw = fopen(filename,'w');
+
+for i=1:nfiles
+    if length(files
+    fpi = fopen(char(files(i)),'r');
+    ignore = fgetl(fpi);
+    ignore = fgetl(fpi);
+    if (i == 1)
+        fprintf(fpw,'File\t');
+        fprintf(fpw,ignore);
+        fprintf(fpw,'\n');
+    end
+    ignore = fgetl(fpi);
+    source = fgetl(fpi);
+    if (selection == 1)
+        source = fgetl(fpi); % read another line if 2nd dipole chosen
+    end
+    fprintf(fpw,char(files(i)));
+    fprintf(fpw,'\t');
+    fprintf(fpw, source);
+    fprintf(fpw,'\n');
+    fclose(fpi);
+end
+
+fclose('all');

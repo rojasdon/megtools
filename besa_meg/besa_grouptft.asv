@@ -1,0 +1,31 @@
+%function [pvals tvals] = besa_grouptft(type,tails)
+
+list1 = spm_get([1,100],'*.tfc','Select group 1 files')
+list2 = spm_get([1,100],'*.tfc','Select group 2 files')
+
+for i=1:size(list1,1)
+    grp1(i)=readBESAtfc(list1(i,:))
+end
+
+for i=1:size(list2,1)
+    grp2(i)=readBESAtfc(list2(i,:))
+end
+
+%get array size from first file
+sz=size(grp1(1).Data)
+arr1=zeros(size(grp1,2);
+arr2=zeros(size(grp2,2);
+tvals=grp1(1);
+tvals.Data=tvals.Data*0;
+pvals=tvals;
+tvals.ConditionName='t-statistics';
+pvals.ConditionName='p-values';
+
+for i=1:sz(1)
+    for j=1:sz(2)
+        for k=1:sz(3)
+            arr1(
+            [t, p]=t_test(grp1(:).Data(i,j,k),grp2(:).Data(i,j,k),type,tails);
+        end
+    end
+end

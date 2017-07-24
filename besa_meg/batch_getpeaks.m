@@ -1,0 +1,72 @@
+% batch script to read in BESA source waveform files (*.swf) and extract
+% peak latency/amplitude information within a specified latency window. The
+% assumtion is that you want to collect 1 set of amplitude/latency points
+% for each subject for a single condition (i.e., left vs. right). Multiple
+% source files can be read, but only 1 source waveform extracted per
+% execution.
+
+% get list of files
+[files paths]=uigetfile('*1310Hz.swf','MultiSelect','on');
+
+if ischar(files)
+    nfiles = 1;
+else
+    nfiles = size(files,2);
+end
+
+% open text file for writing results
+[filename, filepath] = uiputfile('*.txt', 'Output file');
+
+% prompt for latency window of interest
+prompt = {'Min latency (ms):','Max latency (ms):'};
+dlg_title = 'Search window';
+num_lines = 1;
+def = {'60','120'};
+win = inputdlg(prompt,dlg_title,num_lines,def);
+start = str2num(char(win(1)));
+stop = str2num(char(win(2)));
+
+% prompt for negative or positive peak to search in window of interest
+peaksign = menu('Peak sign?','Positive','Negative');
+
+% prompt for 1st dipole or 2nd
+dipnum = menu('Dipole number?','1','2');
+   
+fpw = fopen(filename,'w');
+
+for i=1:nfiles
+    if ischar(files)
+        cur = files;
+    else
+        cur = char(files(i));
+    end
+    % read waveform file 
+    swf=readBESAswf(cur);
+    %get indices of requested time frequency windows
+    [diff,tstart] = min(abs(swf.Time - start));
+    [diff,tstop]  = min(abs(swf.Time - stop)); 
+    % and find desired peak information
+    if peaksign == 1
+        peak=max(swf.data(dipnum,tstart:tstop));
+    else
+        peak=min(swf.data(dipnum,tstart:tstop));
+    end
+    ind = find(swf.data(dipnum,:) == peak);
+    lat = swf.Time(ind);
+    if (i == 1)
+        fprintf(fpw,'File\tLatency\tAmplitude');
+        fprintf(fpw,'\n');
+    end
+    if nfiles == 1
+        fprintf(fpw,files);
+    else
+        fprintf(fpw,char(files(i)));
+    end
+    fprintf(fpw,'\t');
+    fprintf(fpw,num2str(lat));
+    fprintf(fpw,'\t');
+    fprintf(fpw,num2str(peak));
+    fprintf(fpw,'\n');
+end
+
+fclose('all');

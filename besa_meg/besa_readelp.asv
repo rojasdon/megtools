@@ -1,0 +1,24 @@
+function locs = besa_readelp(filename)
+
+if isempty(findstr(filename,'.'))
+  filename = [filename '.elp'];
+end
+
+locs.type   = [];
+locs.label  = [];
+locs.theta  = [];
+locs.phi    = [];
+
+tmp = textread(filename,'%s');
+
+%this may need lots of mods to account for different sensor types!
+offset = 1;
+for i=1:length(tmp)
+    locs(i).type    = char(tmp(off));
+    locs(i).label   = char(tmp(i+1));
+    locs(i).theta   = str2num(char(tmp(i+2)));
+    locs(i).phi     = str2num(char(tmp(i+3)));
+    offset          = offset + 4;
+end
+
+return

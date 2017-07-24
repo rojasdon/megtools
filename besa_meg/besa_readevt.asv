@@ -1,0 +1,49 @@
+function events = besa_readevt(filename)
+
+if isempty(findstr(filename,'.'))
+  filename = [filename '.evt'];
+end
+fp = fopen(filename,'r');
+
+% For convenience, we will use the EEGLAB structure (ie, EEG.events)
+events.latency      = [];
+events.position     = [];
+events.type         = [];
+%events.init_index   = [];
+%events.init_time    = [];
+%events.urevent      = [];
+
+% NOTE: This may will not work on all evt files, depending on how
+% BESA outputs the evt data in the 4th column on (i.e., if numeric)...
+% Potential bug: what happens when evt file reflects all evts but
+% export excludes bad trials?
+
+% Read column headings and determine time scale
+header = fgetl(fp);
+if strcmp(header(1:3),'Tms')
+    factor = 1000;
+elseif strcmp(header(1:3),'Tmu')
+    factor = 1000000;
+elseif strcmp(header(1:3),'Tse')
+    factor = 1;
+else
+    error('BESA evt file header does not have time scale as first column');
+    return;
+end
+
+% Read file into structure
+i=1; fend=0;
+while fend ~= 1
+   %tmp                  = fscanf(fp,'%d');
+   tmp                   = fgetl(fp);
+   
+   display(tmp);
+   events(i).latency    = tmp/factor;
+   events(i).type       = tmp;
+   events(i).position   = tmp;
+   %events(i).latency    = tmp(1)/factor;
+   %events(i).type       = tmp(2);
+   %events(i).position   = tmp(3);
+   %ignore               = fgetl(fp); % skip text descriptions
+   i = i + 1; fend = feof(fp);
+end

@@ -1,0 +1,58 @@
+function dat = besa_readdat(filename)
+
+if isempty(findstr(filename,'.'))
+  filename = [filename '.generic'];
+end
+fp = fopen(filename,'r');
+
+if fp < 0
+    error([filename ' not found']);
+    return;
+end
+
+%set up structure: this will need more flexibility
+ignore = fscanf(fp,'BESA Generic Data ');
+dat.Type = 'BESA Generic Data';
+dat.nChannels = fscanf(fp, 'nChannels=%d\n');
+dat.sRate = fscanf(fp, 'sRate=%f\n');
+dat.nSamples = fscanf(fp, 'nSamples=%d\n');
+dat.format = fscanf(fp, 'format=%s\n');
+dat.file = fscanf(fp, 'ile=%s\n'); %why 'file' doesn't work is a mystery
+dat.prestim = fscanf(fp, 'prestimulus=%f\n');
+dat.epochs = fscanf(fp, 'epochs=%d ');
+%other optional parameters
+%change reading mechanism to be more flexible!
+fclose(fp);
+
+%read data
+fp = fopen(dat.file);
+switch dat.format
+    case 'float'
+        %dat.Data = zeros(dat.nSamples*dat.nChannels,'single');
+        format = 'float32';
+    case 'short'
+        %dat.Data = zeros(dat.nSamples*dat.nChannels,'int32');
+        format = 'int16';
+    case 'int'
+        %dat.Data = zeros(dat.nSamples*dat.nChannels,'int32');
+        format = 'int32';
+    case 'double'
+        %dat.Data = zeros(dat.nSamples*dat.nChannels,'double');
+        format = 'double';
+end
+% working read for BESA plugin - inefficient
+%for i=1:dat.nSamples
+%    dat.Data(i,:) = fread(fp, dat.nChannels, format);
+%end
+
+%change column/row order to be more friendly with other programs
+%dat.Data = transpose(dat.Data);
+
+% new read
+dat.Data = fread(fp,[1,Inf],format);
+
+fclose(fp);
+dat.Data = reshape(dat.Data,2,dat.nSamples/dat.epochs,dat.epochs);
+%change column/row order to be more friendly with other programs
+for i = dat.nChannels
+    tmp(i)=squeeze(dat.Data(i,:,:)

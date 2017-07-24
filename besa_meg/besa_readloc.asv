@@ -1,0 +1,32 @@
+function loc = besa_readpos(filename,nchan)
+
+if isempty(findstr(filename,'.'))
+  filename = [filename,'.pos'];
+end
+fp = fopen(filename, 'r');
+
+%determine type from file extension supplied
+[path,file,ext,ver] = fileparts(filename);
+%but force type to grad for testing
+ext = 'pos'
+switch ext
+    case 'pos'
+        nfields = 9;
+    case 'pmg'
+        nfields = 6;
+    case 'elp'
+        nfields = 3;
+    otherwise
+        nfields = 3;
+end
+nchan
+nfields
+loc = zeros(nchan,nfields,'single');
+tmp = textread(filename,'%f');
+
+%this may need lots of mods to account for different sensor types!
+for i=1:nchan
+    loc(i,1:nfields) = tmp(offset:"
+    %[tmp, nfields] = fscanf(fp,'%f')
+        %loc(i,j) = tmp;
+end

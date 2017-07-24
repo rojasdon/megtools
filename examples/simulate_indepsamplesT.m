@@ -1,0 +1,93 @@
+% script to simulate a statistical test for a time frequency analysis
+
+% do tft on real dataset
+tf=tft('ssp.mat',[5 150],'waven',[3 12]);
+cfg.label = 'la1';
+cfg.baselinetype='percentage';
+cfg.measure='nepower';
+tfr1=meg2ft_tfr(cfg,tf);
+
+% now create 3 groups of data, adding noise and offsets
+N = 10;
+offset1 = 1.5; % 50% increase
+toi = [get_time_index(tf,80) get_time_index(tf,110)];
+foi = [get_frequency_index(tf,35) get_frequency_index(tf,45)];
+dat = tf.nepower(foi(1):foi(2),toi(1):toi(2));
+dat2 = dat*offset1;
+tfr2 = tfr1;
+tfr2.powspctrm(1,foi(1):foi(2),toi(1):toi(2)) = dat2;
+ymin = min(tf.nepower(:));
+ymax = max(tf.nepower(:));
+yrange = ymax-ymin;
+gmean  = mean(tf.nepower(:));
+gstd   = std(tf.nepower(:))/2;
+for ii=1:N
+    tmp = tfr1;
+    noise = (gmean+gstd*randn(1,146,509));
+    tmp.powspctrm = tmp.powspctrm+noise;
+    g1{ii} = tmp;
+end
+for ii=1:N
+    tmp = tfr2;
+    noise = (gmean+gstd*randn(1,146,509));
+    tmp.powspctrm = tmp.powspctrm+noise;
+    g2{ii} = tmp;
+end
+
+ga1=ft_freqgrandaverage([],g1{:});
+ga2=ft_freqgrandaverage([],g2{:});
+
+% make a figure to illustrate group results 
+zmax                   = max(ga2.powspctrm(:));
+zmin                   = min(ga2.powspctrm(:));
+cfg_plot               = [];
+cfg_plot.parameter     = 'powspctrm';
+cfg_plot.zlim          = [zmin zmax];
+h=figure('color','w');
+subplot(2,1,1); ft_singleplotTFR(cfg_plot,ga1);
+title('G1 Grand Average'); xlabel('Time (ms)'); ylabel('Frequency (Hz)');
+subplot(2,1,2); ft_singleplotTFR(cfg_plot,ga2);
+title('G2 Grand Average'); xlabel('Time (ms)'); ylabel('Frequency (Hz)');
+
+cfg_stat = [];
+%cfg_stat.clustercritval    = 5;
+cfg_stat.computecritval   = 'yes';
+%cfg_stat.clusterthreshold = 'nonparametric_individual';
+cfg_stat.clusterthreshold = 'parametric';
+cfg_stat.latency          = 'all';
+cfg_stat.frequency        = 'all';
+cfg_stat.avgovertime      = 'no';
+cfg_stat.avgoverfreq      = 'no';
+cfg_stat.statistic        = 'indepsamplesT';
+cfg_stat.method           = 'montecarlo';
+cfg_stat.correctm         = 'cluster';
+cfg_stat.neighbours       = [];
+cfg_stat.design           = [1:length(g1) 1:length(g2);
+    ones(1,length(g1))...
+    ones(1,length(g2))*2];
+cfg_stat.ivar = 2;
+%cfg_stat.tail = 1;
+cfg_stat.numrandomization = 100;
+
+stat = ft_freqstatistics(cfg_stat, g1{:}, g2{:});
+
+figure;
+cfg_stat               = [];
+cfg_stat.parameter     = 'stat';
+ft_singleplotTFR(cfg_stat,stat);
+title('F-statistic map'); xlabel('Time (ms)'); ylabel('Frequency (Hz)');
+hold on;
+if ~isempty(stat.posclusters)
+    pos_pvals=[stat.posclusters(:).prob];
+    pind = find(pos_pvals<stat.cfg.alpha);
+    pos = squeeze(ismember(stat.posclusterslabelmat, pind));
+    % over plot a line with the cluster corrected p < .05 result
+    contour(stat.time,stat.freq,squeeze(pos),[1 1],'w-','linewidth',3);
+end
+if ~isempty(stat.negclusters)
+    neg_pvals=[stat.negclusters(:).prob];
+    nind = find(neg_pvals<stat.cfg.alpha);
+    neg = squeeze(ismember(stat.negclusterslabelmat, nind));
+    % over plot a line with the cluster corrected p < .05 result
+    contour(stat.time,stat.freq,squeeze(neg),[1 1],'k-','linewidth',3);
+end

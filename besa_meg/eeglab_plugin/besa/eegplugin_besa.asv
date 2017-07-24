@@ -1,0 +1,17 @@
+%eegplugin_besa() - import/export from/to BESA using generic data format
+
+function vers = eegplugin_besa(fig, try_strings, catch_strings);
+
+%with 'vers' output plugin will be treated as "plugin" and not as "plugin function"
+vf = fopen(fullfile(fileparts(mfilename), 'version.txt'),'r');
+if vf == -1
+    vers = 'besa generic beta';
+else
+    vers = fgetl(vf);
+    fclose(vf);
+end
+
+%menu
+importmenu = findobj(fig,'tag','import data');
+exportmenu = findobj(fig,'tag','export');
+imenu = uimenu(importmenu
