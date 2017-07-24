@@ -9,8 +9,14 @@ meg_defaults;
 
 % directory for data
 [pth,~,~] = fileparts(which('meg_defaults'));
+
+% check if data are downloaded
 pth = fullfile(pth,'sample_data','auditory');
-cd(pth);
+if exist(fullfile(pth,'sample_data','auditory'),'dir')
+    cd(pth);
+else
+    error('Sample dataset not present!');
+end
 
 % import a continuous file - by default the sample file in installation.
 cnt = get4D('c,rfhp0.1Hz');
