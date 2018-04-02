@@ -401,7 +401,7 @@ function plotComponents(time,compsignals,type)
         end
     end
     xlabel('Time (ms)');
-    if strcmp(type,'components'); 
+    if strcmp(type,'components') 
         ylabel('Component #');
     else
         ylabel('Channel #');
