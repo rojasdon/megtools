@@ -4,21 +4,24 @@ if isempty(findstr(filename,'.'))
   filename = [filename '.elp'];
 end
 
-locs.type       = [];
-locs.label      = [];
-locs.sph_theta  = [];
-locs.sph_phi    = [];
+locs.type   = [];
+locs.label  = [];
+locs.theta  = [];
+locs.phi    = [];
 
-tmp = textread(filename,'%s');
+fid = fopen(filename);
 
 %this may need lots of mods to account for different sensor types!
-offset = 1;
-for i=1:length(tmp)/4
-    locs(i).type    = char(tmp(offset));
-    locs(i).label   = char(tmp(offset+1));
-    locs(i).theta   = str2num(char(tmp(offset+2)));
-    locs(i).phi     = str2num(char(tmp(offset+3)));
-    offset          = offset + 4;
+line = fgetl(fid); % first line is junk (usually)
+ii = 1;
+while ~feof(fid)
+    line = fgetl(fid);
+    tmp = textscan(line,'%s %s %s %s %d\n','delimiter','\t','MultipleDelimsAsOne',1);
+    locs(ii).type    = char(tmp{1});
+    locs(ii).label   = char(tmp{2});
+    locs(ii).theta   = str2num(char(tmp{3}));
+    locs(ii).phi     = str2num(char(tmp{4}));
+    ii = ii + 1;
 end
 
 return
