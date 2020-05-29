@@ -47,8 +47,25 @@ end
 int = 1e3/sr;
 dur = round(dur/int);
 
+% notch filter data at 60, 120 and 180 line frequencies
+notches = [60,120,180];
+fn      = sr/2; % Niquist
+order   = 4;
+tmp = chn;
+for ii=1:length(notches)
+    fR      = notches(ii)/fn; % ratio of notch to Niquist
+    nW      = .1 * order; % width
+    n0      = [exp(sqrt(-1)*pi*fR), exp(-sqrt(-1)*pi*fR)];
+    poles   = (1-nW)*n0;
+    B       = poly(n0);
+    A       = poly(poles);
+    for jj=1:nchan
+        tmp(jj,:) = filtfilt(B, A, double(tmp(jj,:)));
+    end
+end
+
 % high pass filter data at 20 Hz
-[B, A] = butter(2, 20/(sr/2), 'high'); 
+[B, A] = butter(6, 20/(sr/2), 'high'); 
 B = double(B); 
 A = double(A);
 tmp = zeros(size(chn,1),size(chn,2));
@@ -61,7 +78,7 @@ end
 chn = abs(chn);
 
 % low pass filter data at 10 Hz
-[B, A] = butter(2, 10/(sr/2), 'low'); 
+[B, A] = butter(6, 10/(sr/2), 'low'); 
 B = double(B); 
 A = double(A);
 tmp = zeros(size(chn,1),size(chn,2));
